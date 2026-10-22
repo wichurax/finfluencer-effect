@@ -250,7 +250,7 @@ const End: React.FC<{ t: number; from: number }> = ({ t, from }) => (
       </div>
       <div style={{ opacity: ease(t, from + 1.8, from + 2.2), fontSize: 34, fontWeight: 600, color: "#fff",
         marginTop: 26, paddingTop: 26, borderTop: "2px solid #2c2d31" }}>
-        Report &amp; code: link in the post
+        Report &amp; code: link in the comments
       </div>
       {/* ElevenLabs' free plan requires this credit wherever the voice is published. */}
       <div style={{ opacity: ease(t, from + 1.8, from + 2.2), fontSize: 28, color: "#8d8d93", marginTop: -14 }}>
