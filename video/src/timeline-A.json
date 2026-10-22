@@ -1,0 +1,237 @@
+{
+ "name": "A",
+ "duration": 54.948,
+ "audio": "voice-A.wav",
+ "sentences": [
+  {
+   "visual": "headline",
+   "start": 0.0,
+   "end": 2.64,
+   "until": 3.18
+  },
+  {
+   "visual": "channels",
+   "start": 3.18,
+   "end": 7.02,
+   "until": 7.94
+  },
+  {
+   "visual": "aiRead",
+   "start": 7.94,
+   "end": 14.54,
+   "until": 15.14
+  },
+  {
+   "visual": "priceChart",
+   "start": 15.14,
+   "end": 17.96,
+   "until": 18.44
+  },
+  {
+   "visual": "chanceCloud",
+   "start": 18.44,
+   "end": 21.16,
+   "until": 21.94
+  },
+  {
+   "visual": "usRaw",
+   "start": 21.94,
+   "end": 27.86,
+   "until": 27.86
+  },
+  {
+   "visual": "earnings",
+   "start": 27.86,
+   "end": 35.48,
+   "until": 36.22
+  },
+  {
+   "visual": "usClean",
+   "start": 36.22,
+   "end": 39.28,
+   "until": 40.3
+  },
+  {
+   "visual": "plClean",
+   "start": 40.3,
+   "end": 47.08,
+   "until": 47.82
+  },
+  {
+   "visual": "plSmall",
+   "start": 47.82,
+   "end": 49.84,
+   "until": 50.76
+  },
+  {
+   "visual": "end",
+   "start": 50.76,
+   "end": 53.62,
+   "until": 54.94833333333333
+  }
+ ],
+ "chunks": [
+  {
+   "sentence": 0,
+   "text": "Do finance YouTubers",
+   "start": 0.0,
+   "end": 1.4
+  },
+  {
+   "sentence": 0,
+   "text": "move stock prices?",
+   "start": 1.4,
+   "end": 2.64
+  },
+  {
+   "sentence": 1,
+   "text": "I took the three biggest",
+   "start": 3.18,
+   "end": 4.44
+  },
+  {
+   "sentence": 1,
+   "text": "stock-picking channels",
+   "start": 4.44,
+   "end": 5.5
+  },
+  {
+   "sentence": 1,
+   "text": "in the U.S. and in Poland.",
+   "start": 5.5,
+   "end": 7.02
+  },
+  {
+   "sentence": 2,
+   "text": "An AI model read *2,500+* of their videos",
+   "start": 7.94,
+   "end": 11.44
+  },
+  {
+   "sentence": 2,
+   "text": "and tagged every call",
+   "start": 11.44,
+   "end": 12.98
+  },
+  {
+   "sentence": 2,
+   "text": "as *bullish* or *bearish*.",
+   "start": 12.98,
+   "end": 14.54
+  },
+  {
+   "sentence": 3,
+   "text": "Then I checked:",
+   "start": 15.14,
+   "end": 15.92
+  },
+  {
+   "sentence": 3,
+   "text": "did the stock follow the call?",
+   "start": 16.5,
+   "end": 17.96
+  },
+  {
+   "sentence": 4,
+   "text": "And compared it with *2,000* random days.",
+   "start": 18.44,
+   "end": 21.16
+  },
+  {
+   "sentence": 5,
+   "text": "In the U.S., stocks beat the market",
+   "start": 21.94,
+   "end": 24.22
+  },
+  {
+   "sentence": 5,
+   "text": "by almost a *full point* the next day.",
+   "start": 24.22,
+   "end": 26.36
+  },
+  {
+   "sentence": 5,
+   "text": "Far beyond chance.",
+   "start": 26.7,
+   "end": 27.86
+  },
+  {
+   "sentence": 6,
+   "text": "But it piles up on news days,",
+   "start": 27.86,
+   "end": 30.34
+  },
+  {
+   "sentence": 6,
+   "text": "like *earnings*.",
+   "start": 30.76,
+   "end": 31.26
+  },
+  {
+   "sentence": 6,
+   "text": "The news moves the stock.",
+   "start": 31.98,
+   "end": 33.28
+  },
+  {
+   "sentence": 6,
+   "text": "The YouTuber just talks about it.",
+   "start": 33.84,
+   "end": 35.48
+  },
+  {
+   "sentence": 7,
+   "text": "Remove the news,",
+   "start": 36.22,
+   "end": 37.22
+  },
+  {
+   "sentence": 7,
+   "text": "and what's left is *within chance*.",
+   "start": 37.52,
+   "end": 39.28
+  },
+  {
+   "sentence": 8,
+   "text": "In Poland, the effect *stays*.",
+   "start": 40.3,
+   "end": 42.08
+  },
+  {
+   "sentence": 8,
+   "text": "Even on quiet days,",
+   "start": 42.84,
+   "end": 44.1
+  },
+  {
+   "sentence": 8,
+   "text": "stocks follow the YouTuber's call",
+   "start": 44.42,
+   "end": 46.16
+  },
+  {
+   "sentence": 8,
+   "text": "by *half a point*.",
+   "start": 46.16,
+   "end": 47.08
+  },
+  {
+   "sentence": 9,
+   "text": "Most of all in small companies.",
+   "start": 47.82,
+   "end": 49.84
+  },
+  {
+   "sentence": 10,
+   "text": "Too small to trade on.",
+   "start": 50.76,
+   "end": 52.02
+  },
+  {
+   "sentence": 10,
+   "text": "But big enough to measure.",
+   "start": 52.48,
+   "end": 53.62
+  }
+ ]
+}

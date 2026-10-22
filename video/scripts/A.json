@@ -1,0 +1,24 @@
+{
+  "name": "A",
+  "title": "Version A (English): newspaper headline, the method as a story, the results",
+  "lang": "en",
+  "engine": "elevenlabs",
+  "voice": "nPczCjzI2devNBz1zQrb",
+  "voiceName": "Brian",
+  "model": "eleven_v4",
+  "pause": 0.3,
+  "note": "Chunks are captions. A chunk is a string, or [shown, spoken] when the voice must say it differently. *word* is highlighted.",
+  "sentences": [
+    {"visual": "headline", "chunks": ["Do finance YouTubers", "move stock prices?"]},
+    {"visual": "channels", "chunks": ["I took the three biggest", "stock-picking channels", "in the U.S. and in Poland."]},
+    {"visual": "aiRead", "chunks": [["An AI model read *2,500+* of their videos", "An A.I. model read more than twenty-five hundred of their videos"], "and tagged every call", "as *bullish* or *bearish*."]},
+    {"visual": "priceChart", "chunks": ["Then I checked:", "did the stock follow the call?"]},
+    {"visual": "chanceCloud", "chunks": [["And compared it with *2,000* random days.", "And compared it with two thousand random days."]]},
+    {"visual": "usRaw", "chunks": ["In the U.S., stocks beat the market", "by almost a *full point* the next day.", "Far beyond chance."]},
+    {"visual": "earnings", "chunks": ["But it piles up on news days,", "like *earnings*.", "The news moves the stock.", "The YouTuber just talks about it."]},
+    {"visual": "usClean", "chunks": ["Remove the news,", "and what's left is *within chance*."]},
+    {"visual": "plClean", "chunks": ["In Poland, the effect *stays*.", "Even on quiet days,", "stocks follow the YouTuber's call", "by *half a point*."]},
+    {"visual": "plSmall", "chunks": ["Most of all in small companies."]},
+    {"visual": "end", "chunks": ["Too small to trade on.", "But big enough to measure."]}
+  ]
+}

@@ -1,0 +1,9 @@
+# Voice tools (tools/voice.py and the voice tests). Install into tools/.venv:
+#   uv venv tools/.venv && uv pip install --python tools/.venv/Scripts/python.exe -r tools/requirements.txt
+elevenlabs==2.74.1
+python-dotenv==1.2.4
+kokoro-onnx==0.6.1
+soundfile==0.14.0
+piper-tts==1.8.0
+faster-whisper==1.2.1
+numpy==2.5.4
