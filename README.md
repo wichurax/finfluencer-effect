@@ -172,6 +172,8 @@ a group), and if you can, a command that shows it.
 - `src/finfluencer/analyze.py`: the events, the random-date baseline, every test group.
 - `labels/videos.csv`: every video (metadata only) and which model labelled it.
 - `labels/labels.csv`: one row per stock named in a video: company, ticker, direction, strength, main topic or not.
+  In both, a title, company or ticker starting with `=`, `+`, `-` or `@` has an apostrophe in front, so a
+  spreadsheet does not run it as a formula; `labels.load()` takes it off.
 - `symbol_fixes.json`: hand corrections of tickers the model got wrong, for example `{"DGN.WA": "DIG.WA"}`;
   an empty string removes one.
 - `data/` (not in git): what each step downloads or produces.

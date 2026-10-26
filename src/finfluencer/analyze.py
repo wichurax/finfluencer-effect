@@ -329,6 +329,8 @@ def test_group(ev: pd.DataFrame, mask: pd.Series, key: str, null: dict[str, np.n
     # the centre NaN, every comparison false, and p the smallest there is.
     drawn = ~np.isnan(null_means)
     null_means, null_hits = null_means[drawn], null_hits[drawn]
+    if len(null_means) == 0:
+        return res
     centre = null_means.mean()
     obs = float(y.mean())
     res.update({
@@ -371,6 +373,8 @@ def test_momentum(ev: pd.DataFrame, mask: pd.Series, key: str, null: dict[str, n
     slope = float(np.cov(xv, yv)[0, 1] / np.var(xv, ddof=1))
     null_means = np.nanmean(np.where(ok, y_null - slope * x_null, np.nan), axis=1)
     null_means = null_means[~np.isnan(null_means)]  # as in test_group: an empty draw is no draw
+    if len(null_means) == 0:
+        return res
     y_obs = ev.loc[m, key].to_numpy() * sign[m]
     x_obs = ev.loc[m, "car_pre"].to_numpy() * sign[m]
     obs = float(np.mean(y_obs - slope * x_obs))

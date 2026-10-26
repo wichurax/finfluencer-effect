@@ -185,10 +185,10 @@ CODEX_OFF = ["shell_tool", "unified_exec", "view_image", "image_generation", "mu
 
 
 def codex_defaults() -> tuple[str, str]:
-    """Model and reasoning effort Codex uses when none is passed, from ~/.codex/config.toml."""
+    """Model and reasoning effort Codex uses when none is passed, from $CODEX_HOME/config.toml (default ~/.codex)."""
     import tomllib
 
-    path = Path.home() / ".codex" / "config.toml"
+    path = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex").expanduser() / "config.toml"
     config = tomllib.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     return config.get("model", "default"), config.get("model_reasoning_effort", "default")
 

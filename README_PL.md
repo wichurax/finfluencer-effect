@@ -195,6 +195,8 @@ Po to kod i etykiety są publiczne. Otwórz zgłoszenie (Issue) i napisz w nim:
 - `labels/videos.csv`: wszystkie filmy (same metadane) i model, który ocenił każdy z nich.
 - `labels/labels.csv`: każda spółka wskazana w filmie, w osobnym wierszu. Zawiera nazwę, ticker, kierunek i siłę
   opinii oraz to, czy spółka była głównym tematem filmu.
+  W obu plikach tytuł, nazwa lub ticker zaczynający się od `=`, `+`, `-` albo `@` ma na początku apostrof,
+  żeby arkusz nie wykonał go jako formuły; `labels.load()` go zdejmuje.
 - `symbol_fixes.json`: ręczne poprawki tickerów, które model podał błędnie, np. `{"DGN.WA": "DIG.WA"}`; pusty
   napis usuwa ticker.
 - `data/` (poza gitem): to, co pobierają i tworzą kolejne kroki.
