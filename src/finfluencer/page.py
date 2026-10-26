@@ -362,6 +362,8 @@ def body_pl(f: dict, cov: dict, ex: dict) -> str:
     return f"""
 <header>
   <p class="meta">Eksperyment · {films(total, L)} · {STUDY_START:%m.%Y}–{STUDY_END:%m.%Y}</p>
+  <p class="meta">Poprawione 26.10.2026: trzy drobne błędy w kodzie. Wyniki dla USA przesunęły się najwyżej o
+  0,02 pkt proc., dla Polski bez zmian; wnioski te same. Szczegóły w README projektu.</p>
   <h1>Czy finansowi youtuberzy ruszają kursami akcji?</h1>
   <nav aria-label="Spis treści"><ul>
     <li><a href="#odpowiedz">Krótka odpowiedź</a></li><li><a href="#slowniczek">Słowniczek</a></li>
@@ -595,6 +597,8 @@ def body_en(f: dict, cov: dict, ex: dict) -> str:
     return f"""
 <header>
   <p class="meta">Experiment · {films(total, L)} · {STUDY_START:%b %Y} – {STUDY_END:%b %Y}</p>
+  <p class="meta">Corrected 26 Oct 2026: three small faults in the code. U.S. numbers moved by at most 0.02 pp,
+  Polish ones not at all; the conclusions stand. Details in the project's README.</p>
   <h1>Do finance YouTubers move stock prices?</h1>
   <nav aria-label="Contents"><ul>
     <li><a href="#answer">Short answer</a></li><li><a href="#glossary">Glossary</a></li>
