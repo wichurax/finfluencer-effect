@@ -196,8 +196,9 @@ def build_events(series: dict[str, Series], mentions_dir: Path = MENTIONS,
     # Views terciles within each channel, since channel sizes differ 50x. Views are counted at download
     # time, so older videos have had longer to collect them.
     video_views = events.drop_duplicates("video_id").set_index("video_id")
+    # A channel with fewer than three videos (a partial run) has no terciles, rather than an error.
     tercile = video_views.groupby("channel")["views"].transform(
-        lambda v: pd.qcut(v.rank(method="first"), 3, labels=["low", "mid", "high"]))
+        lambda v: pd.qcut(v.rank(method="first"), 3, labels=["low", "mid", "high"]) if len(v) >= 3 else None)
     events["views_tercile"] = events["video_id"].map(tercile).astype(str)
     # Liquidity terciles within each market, since PLN and USD turnover are not comparable.
     events["liquidity"] = events.groupby("market")["turnover"].transform(
@@ -315,6 +316,10 @@ def test_group(ev: pd.DataFrame, mask: pd.Series, key: str, null: dict[str, np.n
     se = float(fit.bse[0])
     null_means = np.nanmean(null[key][:, m] * sign[m], axis=1)
     null_hits = np.nanmean((null[key][:, m] * sign[m]) > 0, axis=1)
+    # A draw with no value for this group (stocks with a short history) is no draw: kept, it makes
+    # the centre NaN, every comparison false, and p the smallest there is.
+    drawn = ~np.isnan(null_means)
+    null_means, null_hits = null_means[drawn], null_hits[drawn]
     centre = null_means.mean()
     obs = float(y.mean())
     res.update({
@@ -356,6 +361,7 @@ def test_momentum(ev: pd.DataFrame, mask: pd.Series, key: str, null: dict[str, n
     xv, yv = x_null[ok].astype(float), y_null[ok].astype(float)
     slope = float(np.cov(xv, yv)[0, 1] / np.var(xv, ddof=1))
     null_means = np.nanmean(np.where(ok, y_null - slope * x_null, np.nan), axis=1)
+    null_means = null_means[~np.isnan(null_means)]  # as in test_group: an empty draw is no draw
     y_obs = ev.loc[m, key].to_numpy() * sign[m]
     x_obs = ev.loc[m, "car_pre"].to_numpy() * sign[m]
     obs = float(np.mean(y_obs - slope * x_obs))

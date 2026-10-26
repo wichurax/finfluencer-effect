@@ -156,10 +156,18 @@ def _classify_codex(codex: str, model: str | None, text: str) -> tuple[dict, str
         schema.write_text(json.dumps(SCHEMA), encoding="utf-8")
         workdir = Path(tmp) / "empty"  # no AGENTS.md or repo for the agent to pick up
         workdir.mkdir()
-        cmd = [codex, "exec", "--ephemeral", "--skip-git-repo-check", "-s", "read-only",
-               "-C", str(workdir), "--output-schema", str(schema), "-o", str(answer)]
-        if model:
-            cmd += ["-m", model]
+        # The transcript is the internet's text, and the labels are published: like the Claude CLI
+        # above, the model gets no tools. Read-only alone would still let a transcript with planted
+        # instructions have it read a token on this machine into a label. The user's config (its MCP
+        # servers) and rules stay out too; its model and effort are passed on, as the label names them.
+        default_model, effort = codex_defaults()
+        cmd = [codex, "exec", "--ephemeral", "--skip-git-repo-check", "--ignore-user-config", "--ignore-rules",
+               "-s", "read-only", "-C", str(workdir), "--output-schema", str(schema), "-o", str(answer),
+               "-c", 'web_search="disabled"', *[arg for feature in CODEX_OFF for arg in ("--disable", feature)]]
+        if (model or default_model) != "default":
+            cmd += ["-m", model or default_model]
+        if effort != "default":
+            cmd += ["-c", f'model_reasoning_effort="{effort}"']
         cmd.append("-")
         proc = subprocess.run(cmd, input=f"{SYSTEM}\n\n{text}", capture_output=True, text=True,
                               encoding="utf-8", timeout=900)
@@ -168,8 +176,12 @@ def _classify_codex(codex: str, model: str | None, text: str) -> tuple[dict, str
             if "limit" in message.lower():
                 raise UsageLimitReached(message)
             raise ClassifyError(f"codex: {message}")
-        default_model, effort = codex_defaults()
         return json.loads(answer.read_text(encoding="utf-8")), f"codex:{model or default_model} ({effort})"
+
+
+#: Codex's tools, off for the labeller: it reads a transcript and answers in JSON, nothing more.
+CODEX_OFF = ["shell_tool", "unified_exec", "view_image", "image_generation", "multi_agent", "apps",
+             "plugins", "browser_use", "computer_use", "hooks"]
 
 
 def codex_defaults() -> tuple[str, str]:
