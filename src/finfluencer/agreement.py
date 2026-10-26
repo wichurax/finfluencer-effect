@@ -98,7 +98,10 @@ def stats(df: pd.DataFrame) -> dict:
         "stocks_named_by_either": len(df),
         "named_by_both_share": round(len(both) / len(df), 3),
         "stance_agreement_when_both_named": round(float((both["first"] == both["second"]).mean()), 3),
-        "cohen_kappa_when_both_named": round(cohen_kappa(both["first"].tolist(), both["second"].tolist()), 3),
+        # No stock named by both (two models that disagree on every name): no agreement to measure.
+        "cohen_kappa_when_both_named": (
+            round(cohen_kappa(both["first"].tolist(), both["second"].tolist()), 3) if len(both) else None
+        ),
         "directional_calls": len(directional),
         "directional_same": round(float((directional["first"] == directional["second"]).mean()), 3),
         "directional_opposite": round(float(opposite.mean()), 3),

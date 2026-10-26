@@ -30,9 +30,9 @@ od października 2024 do października 2026 roku.
 - **Losowe dni:** te same filmy przeniesione na przypadkowe daty z okresu badania, 2000 razy. Pokazują, ile
   „efektu” daje sam przypadek.
 - **p:** jaka część losowań dała wynik co najmniej tak duży jak prawdziwy. Im mniejsze p, tym trudniej wynik
-  wytłumaczyć przypadkiem. p = 0,07 znaczy, że tak duży wynik zdarza się przypadkiem w 7 losowaniach na 100.
+  wytłumaczyć przypadkiem. p = 0,06 znaczy, że tak duży wynik zdarza się przypadkiem w 6 losowaniach na 100.
 - **Test bez newsów:** tylko opinie z filmów opublikowanych poza sesją, o spółkach, które w tygodniu przed
-  filmem były spokojne (kurs zmienił się o mniej niż 3%, obroty normalne), z filmów, w których tytule nie ma
+  filmem były spokojne (kurs zmienił się o mniej niż 3%, a obroty w trzech sesjach przed filmem były normalne), z filmów, w których tytule nie ma
   słów o wiadomościach (wyniki, raport, dywidenda, przejęcie...).
 
 ## Wyniki
@@ -43,15 +43,15 @@ dni.
 
 | | USA | Polska |
 |---|---|---|
-| Liczba opinii | 2238 (z 713 filmów) | 1197 (z 320 filmów) |
-| Pierwsza sesja po filmie | **+0,82 pkt proc.**, p < 0,001 | **+0,36 pkt proc.**, p < 0,001 |
+| Liczba opinii | 2240 (z 714 filmów) | 1197 (z 320 filmów) |
+| Pierwsza sesja po filmie | **+0,81 pkt proc.**, p < 0,001 | **+0,36 pkt proc.**, p < 0,001 |
 | Przy wynikach kwartalnych (±3 sesje) | +1,78 pkt proc. (387 opinii) | za mało opinii (28) |
-| W pozostałe dni | +0,62 pkt proc. | +0,22 pkt proc. |
-| **Test bez newsów** | **+0,24 pkt proc., p = 0,07: w granicach przypadku** | **+0,49 pkt proc., p = 0,001** |
-| Trzecia część spółek z najmniejszymi obrotami | +1,39 pkt proc. | +0,58 pkt proc. |
-| Trzecia część spółek z największymi obrotami | +0,30 pkt proc. | +0,25 pkt proc. |
-| Trzy kolejne sesje | −0,04 pkt proc., p = 0,78 | +0,18 pkt proc., p = 0,13 |
-| Pięć sesji *przed* filmem | +0,38 pkt proc., p = 0,04 | +0,89 pkt proc., p < 0,001 |
+| W pozostałe dni | +0,61 pkt proc. | +0,22 pkt proc. |
+| **Test bez newsów** | **+0,25 pkt proc., p = 0,06: w granicach przypadku** | **+0,49 pkt proc., p = 0,001** |
+| Opinie o spółkach z najmniejszymi obrotami (trzecia część opinii) | +1,38 pkt proc. | +0,58 pkt proc. |
+| Opinie o spółkach z największymi obrotami (trzecia część opinii) | +0,31 pkt proc. | +0,25 pkt proc. |
+| Trzy kolejne sesje | −0,03 pkt proc., p = 0,82 | +0,18 pkt proc., p = 0,13 |
+| Pięć sesji *przed* filmem | +0,40 pkt proc., p = 0,035 | +0,89 pkt proc., p < 0,001 |
 
 Co z tego wynika:
 
@@ -63,6 +63,20 @@ Co z tego wynika:
 - **Efekt nie trwa.** Trzy kolejne sesje nie dokładają nic, co dałoby się zmierzyć.
 - **To korelacja, nie dowód.** W Polsce kurs rusza się w stronę opinii już w tygodniu *przed* filmem
   (+0,89 pkt proc.). Youtuberzy często mówią o spółkach, które już są w ruchu.
+
+## Korekty
+
+**26 października 2026.** Przegląd kodu znalazł trzy błędy. Liczby powyżej są poprawione, żaden wniosek się nie
+zmienia: wyniki dla USA przesunęły się najwyżej o 0,02 pkt proc., p w teście bez newsów z 0,07 na 0,06, wyniki
+dla Polski się nie zmieniły.
+
+- W pięć dni, w które giełda w Nowym Jorku zamyka się o 13:00 (dzień po Święcie Dziękczynienia, Wigilia,
+  3 lipca), film opublikowany po zamknięciu liczył się do tej sesji; teraz do następnej. 23 opinie z 7 filmów.
+- Filtr tytułów w teście bez newsów znał polskie słowo „dywidenda”, ale nie angielskie „dividend”; tytuły
+  amerykańskich filmów o dywidendzie liczą się teraz jako newsy.
+- Test z betą liczył dni bez dość długiej historii do oszacowania bety jako zerowy zwrot; teraz je pomija.
+
+Opublikowany klip pokazuje liczby z pierwszej wersji (+0,82 pkt proc., 2238 opinii).
 
 ## Jak powtórzyć wyniki
 
@@ -160,7 +174,7 @@ Opublikowane etykiety pochodzą od Claude Haiku 5.5 (1752 filmy), Claude Opus 5.
   w około 60% przypadków. Gdy oba wskażą tę samą spółkę, dają ten sam kierunek opinii w 87% przypadków dla
   filmów z USA i w 85% dla polskich. Przeciwne opinie zdarzają się rzadziej niż raz na sto.
 - **Kluczowe testy na obu zestawach etykiet.** Na 243 filmach ocenionych przez oba modele wyniki są zbliżone
-  (wszystkie opinie w USA: +0,75 pkt proc. na etykietach Claude, +0,88 na etykietach GPT; w Polsce +0,30
+  (wszystkie opinie w USA: +0,70 pkt proc. na etykietach Claude, +0,83 na etykietach GPT; w Polsce +0,30
   i +0,45). Ta próba jest jednak za mała, żeby osobno sprawdzić na niej polski test bez newsów.
 - **Zakres.**
   - Po trzy kanały na kraj i dwa lata.

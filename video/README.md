@@ -19,7 +19,7 @@ tworzy `tools/voice_test_kokoro.py`. Własny głos też zadziała, patrz niżej.
 
 ## Głos z ElevenLabs
 
-1. W `video/` uruchom `npx -y @elevenlabs/cli@latest onboard init` i wykonaj to, co wypisze. Logujesz się w
+1. W `video/` uruchom `npx -y @elevenlabs/cli@1.7.1 onboard init` i wykonaj to, co wypisze. Logujesz się w
    przeglądarce, a klucz trafia do `.env.local` (plik jest w `.gitignore`).
 2. `tools/.venv/Scripts/python tools/elevenlabs_check.py` pokazuje plan, zostałe kredyty, koszt jednego nagrania
    skryptu (ok. 730 kredytów) i dostępne głosy. Z `--samples Brian Daniel` zapisuje próbki tych głosów do

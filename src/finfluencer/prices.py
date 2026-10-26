@@ -58,6 +58,15 @@ def download_all() -> None:
     data = pd.concat(frames, axis=1)
     close = data["Close"].dropna(axis=1, how="all")
     volume = data["Volume"][close.columns]
+    # A symbol Yahoo did not answer for this time keeps the history saved before, rather than
+    # losing it to a refresh: the study's numbers rest on it.
+    if (PRICES / "close.parquet").exists() and (PRICES / "volume.parquet").exists():
+        saved_close, saved_volume = pd.read_parquet(PRICES / "close.parquet"), pd.read_parquet(PRICES / "volume.parquet")
+        kept = [s for s in saved_close.columns if s in symbols and s not in close.columns]
+        if kept:
+            close = close.join(saved_close[kept], how="outer")
+            volume = volume.join(saved_volume[kept], how="outer")
+            print(f"kept the saved history of {len(kept)} symbols Yahoo did not answer for: {kept[:20]}", flush=True)
     close.to_parquet(PRICES / "close.parquet")
     volume.to_parquet(PRICES / "volume.parquet")
 

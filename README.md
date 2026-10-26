@@ -20,15 +20,15 @@ random dates give.
 
 | | U.S. channels, U.S. stocks | Polish channels, Warsaw stocks |
 |---|---|---|
-| Calls analysed | 2,238 (in 713 videos) | 1,197 (in 320 videos) |
-| First session after the video | **+0.82 pp**, p < 0.001 | **+0.36 pp**, p < 0.001 |
+| Calls analysed | 2,240 (in 714 videos) | 1,197 (in 320 videos) |
+| First session after the video | **+0.81 pp**, p < 0.001 | **+0.36 pp**, p < 0.001 |
 | Near quarterly earnings (±3 sessions) | +1.78 pp (387 calls) | too few calls (28) |
-| Other days | +0.62 pp | +0.22 pp |
-| **No-news test** | **+0.24 pp, p = 0.07: within chance** | **+0.49 pp, p = 0.001** |
-| Least-traded third of stocks | +1.39 pp | +0.58 pp |
-| Most-traded third of stocks | +0.30 pp | +0.25 pp |
-| The next three sessions | −0.04 pp, p = 0.78 | +0.18 pp, p = 0.13 |
-| The five sessions *before* the video | +0.38 pp, p = 0.04 | +0.89 pp, p < 0.001 |
+| Other days | +0.61 pp | +0.22 pp |
+| **No-news test** | **+0.25 pp, p = 0.06: within chance** | **+0.49 pp, p = 0.001** |
+| Calls on the least-traded stocks (a third of the calls) | +1.38 pp | +0.58 pp |
+| Calls on the most-traded stocks (a third of the calls) | +0.31 pp | +0.25 pp |
+| The next three sessions | −0.03 pp, p = 0.82 | +0.18 pp, p = 0.13 |
+| The five sessions *before* the video | +0.40 pp, p = 0.035 | +0.89 pp, p < 0.001 |
 
 In plain words:
 
@@ -43,8 +43,22 @@ In plain words:
   already moved +0.89 pp in the call's direction during the week *before* the video.
 
 The **no-news test** keeps only calls from videos published outside trading hours, about a stock that moved
-less than 3% and traded at normal volume in the week before, from a video whose title names no news (earnings,
+less than 3% in the week before and traded at normal volume in the three sessions before, from a video whose title names no news (earnings,
 results, dividend, deal, ...).
+
+## Corrections
+
+**26 October 2026.** A review of the code found three faults; the numbers above are corrected, and no conclusion
+changes. U.S. numbers moved by at most 0.02 pp, the no-news test's p from 0.07 to 0.06; Polish ones did not move.
+
+- On the five days the New York exchange closes at 1:00 p.m. (the day after Thanksgiving, Christmas Eve, the
+  3rd of July), a video after the close counted as published during that day's session; it is now the next
+  session's. 23 calls in 7 videos.
+- The no-news test's title filter knew the Polish word for dividend but not the English one; U.S. titles about a
+  dividend now count as news.
+- The beta-adjusted check counted days without enough history for a beta as a zero return; they are now left out.
+
+The published clip shows the numbers as first published (+0.82 pp, 2,238 calls).
 
 ## Reproduce the results
 
@@ -142,7 +156,7 @@ Codex (284). Each video's model is recorded in `labels/videos.csv`.
   same stock about 60% of the time. When both name it, they give the same direction 87% of the time for U.S.
   videos and 85% for Polish ones. Opposite calls are under 1%.
 - **The key tests on both label sets.** On the 243 videos labelled by both models, the estimates are close
-  (all U.S. calls: +0.75 pp on Claude's labels, +0.88 pp on GPT's; Poland: +0.30 and +0.45 pp). That subsample
+  (all U.S. calls: +0.70 pp on Claude's labels, +0.83 pp on GPT's; Poland: +0.30 and +0.45 pp). That subsample
   is too small to test the Polish no-news result on its own.
 - **Scope.** Three channels per country, two years, daily prices: the effect within a session is not visible.
 
