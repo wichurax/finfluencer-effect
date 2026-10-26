@@ -420,8 +420,8 @@ def body_pl(f: dict, cov: dict, ex: dict) -> str:
     <dt>News</dt><dd>Wiadomość o spółce, która sama rusza kursem: wyniki kwartalne, raport bieżący (w Polsce ESPI),
       duża umowa, przejęcie, dywidenda.</dd>
     <dt>Test bez newsów</dt><dd>Tylko te filmy, które wyszły poza sesją (wieczorem, w nocy, w weekend), w tygodniu
-      przed nimi spółka nie miała dużego ruchu (mniej niż 3% na tle rynku) ani dużego obrotu (najwyżej 20% ponad
-      zwykły), a tytuł filmu nie mówi o wynikach, raporcie, umowie, dywidendzie ani przejęciu.</dd>
+      przed nimi spółka nie miała dużego ruchu (mniej niż 3% na tle rynku), w trzech sesjach przed nimi dużego
+      obrotu (najwyżej 20% ponad zwykły), a tytuł filmu nie mówi o wynikach, raporcie, umowie, dywidendzie ani przejęciu.</dd>
     <dt>Płynność</dt><dd>Ile pieniędzy dziennie obraca się akcjami spółki. W mało płynnej spółce kilkadziesiąt osób,
       które kupują tego samego dnia, może poruszyć kursem.</dd>
   </dl>
@@ -654,8 +654,8 @@ def body_en(f: dict, cov: dict, ex: dict) -> str:
     <dt>News</dt><dd>Company news that moves the price by itself: quarterly earnings, regulatory filings (current
       reports in Poland), a big contract, a takeover, a dividend.</dd>
     <dt>No-news test</dt><dd>Only videos that went live outside trading hours (evening, night, weekend), where the
-      stock had no big move (under 3% vs the market) and no unusual volume (at most 20% above normal) in the week
-      before, and whose title doesn't mention earnings, a report, a contract, a dividend or a takeover.</dd>
+      stock had no big move (under 3% vs the market) in the week before and no unusual volume (at most 20% above
+      normal) in the three sessions before, and whose title doesn't mention earnings, a report, a contract, a dividend or a takeover.</dd>
     <dt>Liquidity</dt><dd>How much money trades in the stock each day. In an illiquid stock, a few dozen people buying
       on the same day can move the price.</dd>
   </dl>

@@ -43,10 +43,18 @@ class Market:
     open: str
     close: str
     benchmark: str  # Yahoo symbol of the market proxy
+    #: Sessions that close early, and when: a video after it is the next session's.
+    early_closes: tuple[date, ...] = ()
+    early_close: str = ""
 
 
 MARKETS = {
-    "US": Market("America/New_York", "09:30", "16:00", "SPY"),
+    # NYSE's 1:00 p.m. closes in the study, from its holiday calendar (nyse.com/markets/hours-calendars,
+    # and its 2024 copy in the Web Archive).
+    "US": Market("America/New_York", "09:30", "16:00", "SPY",
+                 early_closes=(date(2024, 11, 29), date(2024, 12, 24), date(2025, 7, 3),
+                               date(2025, 11, 28), date(2025, 12, 24), date(2026, 11, 27), date(2026, 12, 24)),
+                 early_close="13:00"),
     # Yahoo has no WIG index; the Beta ETF on WIG20TR is the closest daily proxy it carries.
     "GPW": Market("Europe/Warsaw", "09:00", "17:05", "ETFBW20TR.WA"),
 }

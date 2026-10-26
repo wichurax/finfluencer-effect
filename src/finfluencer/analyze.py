@@ -41,10 +41,16 @@ class Series:
     csb: np.ndarray  # same for the beta-adjusted abnormal return
     abvol: np.ndarray  # log(volume / median volume of sessions -60..-11)
     turnover: np.ndarray  # median close x volume of sessions -60..-11, a liquidity measure
+    # Cumulative count of sessions with no beta-adjusted return (too little history for a beta yet),
+    # with a leading 0: a beta window with any of them is unavailable, not a return of zero.
+    nob: np.ndarray
 
     def window(self, i, a: int, b: int, beta: bool = False):
-        cs = self.csb if beta else self.cs
-        return cs[i + b + 1] - cs[i + a]
+        if not beta:
+            return self.cs[i + b + 1] - self.cs[i + a]
+        missing = self.nob[i + b + 1] - self.nob[i + a]
+        out = np.where(missing > 0, np.nan, self.csb[i + b + 1] - self.csb[i + a])
+        return out if np.ndim(out) else float(out)  # one event a number, the placebo's draws an array
 
 
 def build_series(close: pd.DataFrame, volume: pd.DataFrame) -> dict[str, Series]:
@@ -75,6 +81,7 @@ def build_series(close: pd.DataFrame, volume: pd.DataFrame) -> dict[str, Series]
             csb=np.concatenate([[0.0], np.cumsum(np.nan_to_num(arb.to_numpy()))]),
             abvol=abvol.to_numpy(),
             turnover=turnover.to_numpy(),
+            nob=np.concatenate([[0], np.cumsum(np.isnan(arb.to_numpy()))]),
         )
     return series
 
@@ -82,7 +89,9 @@ def build_series(close: pd.DataFrame, volume: pd.DataFrame) -> dict[str, Series]
 def find_day0(dates: np.ndarray, published: datetime, market: str) -> tuple[int, str]:
     m = MARKETS[market]
     local = published.astimezone(ZoneInfo(m.tz))
-    open_t, close_t = time.fromisoformat(m.open), time.fromisoformat(m.close)
+    open_t = time.fromisoformat(m.open)
+    # On a day that closes early (the day after Thanksgiving), a video after 13:00 is the next session's.
+    close_t = time.fromisoformat(m.early_close if local.date() in m.early_closes else m.close)
     first = local.date() if local.time() < close_t else local.date() + timedelta(days=1)
     i = int(np.searchsorted(dates, np.datetime64(first)))
     if i >= len(dates):
@@ -251,7 +260,7 @@ HIGH_VIEWS = "Test bez newsów: najczęściej oglądane filmy kanału (górna 1/
 LOW_LIQ = "Najmniej płynne spółki (dolna 1/3)"
 HIGH_LIQ = "Najbardziej płynne spółki (górna 1/3)"
 NEWS_WORDS = (r"wynik|raport|kwarta|espi|kontrakt|umow|dywidend|przejęc|przejmuj|emisj|prognoz|"
-              r"earnings|results|quarter|guidance|report|deal|acqui|merger|split|ipo|buyback|skup")
+              r"earnings|results|quarter|guidance|report|dividend|deal|acqui|merger|split|ipo|buyback|skup")
 QUIET_MOVE = 0.03
 QUIET_VOLUME = 0.2
 
