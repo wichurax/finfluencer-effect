@@ -12,6 +12,7 @@ The quote the model gave as evidence is left out: it is the YouTuber's words. Th
 """
 
 import json
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -27,6 +28,27 @@ RUN_COLUMNS = ["model", "backend", "effort", "classified_at"]
 STOCK_COLUMNS = ["company", "yahoo_symbol", "asset_type", "stance", "conviction", "focus"]
 # The second opinions: GPT on videos Claude labelled, and Claude on videos GPT labelled.
 SECOND_SETS = ("gpt", "claude")
+# Free text that a spreadsheet would run as a formula if it started with one of these characters.
+TEXT_COLUMNS = ["title", "company", "yahoo_symbol"]
+_FORMULA = re.compile(r"^('*)[=+\-@\t\r]")
+
+
+def _escape(frame: pd.DataFrame) -> pd.DataFrame:
+    """Puts an apostrophe before a leading =, +, -, @, tab or CR (and before an apostrophe already in front of one)."""
+    frame = frame.copy()
+    for c in TEXT_COLUMNS:
+        if c in frame:
+            frame[c] = frame[c].map(lambda v: "'" + v if isinstance(v, str) and _FORMULA.match(v) else v)
+    return frame
+
+
+def _unescape(frame: pd.DataFrame) -> pd.DataFrame:
+    """The reverse of _escape: takes one apostrophe off a text that has them in front of a formula character."""
+    frame = frame.copy()
+    for c in TEXT_COLUMNS:
+        if c in frame:
+            frame[c] = frame[c].map(lambda v: v[1:] if _FORMULA.match(v) and v.startswith("'") else v)
+    return frame
 
 
 def _records(directory: Path) -> dict[str, dict]:
@@ -51,15 +73,16 @@ def export() -> None:
                        for s in rec["stocks"]]
         videos.append(row)
     LABELS.mkdir(exist_ok=True)
-    pd.DataFrame(videos).to_csv(LABELS / "videos.csv", index=False)
-    pd.DataFrame(stocks).to_csv(LABELS / "labels.csv", index=False)
+    _escape(pd.DataFrame(videos)).to_csv(LABELS / "videos.csv", index=False)
+    _escape(pd.DataFrame(stocks)).to_csv(LABELS / "labels.csv", index=False)
     print(f"labels/: {len(videos)} videos, {len(stocks)} stock labels", flush=True)
 
 
 def load() -> None:
     """Rebuilds data/videos, data/mentions and data/mentions_check from labels/. Never overwrites a file."""
-    videos = pd.read_csv(LABELS / "videos.csv", dtype={"id": str}, keep_default_na=False)
-    stocks = pd.read_csv(LABELS / "labels.csv", dtype={"video_id": str, "yahoo_symbol": str}, keep_default_na=False)
+    videos = _unescape(pd.read_csv(LABELS / "videos.csv", dtype={"id": str}, keep_default_na=False))
+    stocks = _unescape(pd.read_csv(LABELS / "labels.csv", dtype={"video_id": str, "yahoo_symbol": str},
+                                   keep_default_na=False))
     by_video = {key: group for key, group in stocks.groupby(["video_id", "source"])}
     written = 0
 
