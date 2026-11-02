@@ -10,6 +10,7 @@ import pandas as pd
 import yfinance as yf
 
 from .config import DATA, MARKETS, ROOT, STUDY_END, STUDY_START, market_of
+from .files import escape_formulas
 
 PRICES = DATA / "prices"
 MENTIONS = DATA / "mentions"
@@ -58,15 +59,12 @@ def download_all() -> None:
     data = pd.concat(frames, axis=1)
     close = data["Close"].dropna(axis=1, how="all")
     volume = data["Volume"][close.columns]
-    # A symbol Yahoo did not answer for this time keeps the history saved before, rather than
-    # losing it to a refresh: the study's numbers rest on it.
     if (PRICES / "close.parquet").exists() and (PRICES / "volume.parquet").exists():
         saved_close, saved_volume = pd.read_parquet(PRICES / "close.parquet"), pd.read_parquet(PRICES / "volume.parquet")
-        kept = [s for s in saved_close.columns if s in symbols and s not in close.columns]
+        close, volume, kept = _keep_saved(close, volume, saved_close, saved_volume, set(symbols))
         if kept:
-            close = close.join(saved_close[kept], how="outer")
-            volume = volume.join(saved_volume[kept], how="outer")
-            print(f"kept the saved history of {len(kept)} symbols Yahoo did not answer for: {kept[:20]}", flush=True)
+            print(f"kept the saved history of {len(kept)} symbols Yahoo answered for with fewer prices, or not at "
+                  f"all: {kept[:20]}", flush=True)
     close.to_parquet(PRICES / "close.parquet")
     volume.to_parquet(PRICES / "volume.parquet")
 
@@ -74,6 +72,22 @@ def download_all() -> None:
     (PRICES / "missing.json").write_text(json.dumps(missing, indent=1), encoding="utf-8")
     print(f"saved {close.shape[1]} symbols, {len(missing)} without data: {missing[:40]}", flush=True)
     verify_names({s: names[s] for s in close.columns if s in names})
+
+
+def _keep_saved(close: pd.DataFrame, volume: pd.DataFrame, saved_close: pd.DataFrame, saved_volume: pd.DataFrame,
+                symbols: set[str]) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:
+    """A symbol Yahoo answered for with fewer prices than were saved (only recent ones, say), or not at all, keeps
+    the saved history, rather than losing it to a refresh: the study's numbers rest on it.
+
+    The saved series is kept whole, not filled in from: Yahoo's adjusted closes from two downloads stand on
+    different dividend and split adjustments, and a series spliced from both would get a false return at the seam.
+    """
+    fresh = close.count()
+    kept = [s for s in saved_close.columns if s in symbols and fresh.get(s, 0) < saved_close[s].count()]
+    if kept:
+        close = close.drop(columns=kept, errors="ignore").join(saved_close[kept], how="outer")
+        volume = volume.drop(columns=kept, errors="ignore").join(saved_volume[kept], how="outer")
+    return close, volume, kept
 
 
 STOPWORDS = {"inc", "corp", "corporation", "co", "company", "sa", "s", "a", "plc", "ltd", "limited", "nv",
@@ -113,7 +127,8 @@ def verify_names(names: dict[str, set[str]]) -> None:
         rows.append({"symbol": s, "yahoo_name": yahoo, "labeller_names": " | ".join(sorted(names[s])),
                      "status": status})
     table = pd.DataFrame(rows)
-    table.to_csv(PRICES / "symbol_check.csv", index=False)
+    # Names from Yahoo and from the model, for a person to review in a spreadsheet: no formula runs from them.
+    escape_formulas(table, ["symbol", "yahoo_name", "labeller_names"]).to_csv(PRICES / "symbol_check.csv", index=False)
     counts = table["status"].value_counts().to_dict()
     print(f"name check: {counts.get('review', 0)} to review, {counts.get('unknown', 0)} without a Yahoo name "
           f"(rerun to retry), in {PRICES / 'symbol_check.csv'}", flush=True)

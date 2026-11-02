@@ -5,8 +5,9 @@ import json
 import numpy as np
 import pandas as pd
 
-from .analyze import ALL, HIGH_LIQ, LOW_LIQ, NEAR_EARNINGS, NO_EARNINGS, QUIET_NO_NEWS
+from .analyze import ALL, EVENT_TEXT, HIGH_LIQ, LOW_LIQ, NEAR_EARNINGS, NO_EARNINGS, QUIET_NO_NEWS
 from .config import CHANNELS, RESULTS, ROOT
+from .files import unescape_formulas
 
 DAY0 = 5  # index of the first session after the video in the saved -5..+5 paths
 
@@ -25,6 +26,7 @@ def _effect(tests: pd.DataFrame, seg: str, group: str, measure: str = "car_d0") 
 def _cloud(paths: dict, tests: pd.DataFrame, seg: str, group: str) -> dict:
     """Random-day averages (first session after, in the call's direction), centred on their mean, and the real one."""
     null = paths[f"{seg}|{group}|car"][:, DAY0] * 100
+    null = null[~np.isnan(null)]  # a draw with no value for the group is no draw
     centre = float(null.mean())
     real = float(tests.loc[(seg, group, "car_d0")]["mean"]) * 100
     return {"random": np.round(null - centre, 3).tolist(), "real": round(real - centre, 3)}
@@ -55,7 +57,7 @@ def export() -> None:
     tests = pd.read_csv(RESULTS / "tests.csv").set_index(["segment", "group", "measure"])
     cov = json.loads((RESULTS / "coverage.json").read_text(encoding="utf-8"))
     examples = json.loads((RESULTS / "examples.json").read_text(encoding="utf-8"))
-    events = pd.read_csv(RESULTS / "events.csv", low_memory=False)
+    events = unescape_formulas(pd.read_csv(RESULTS / "events.csv", low_memory=False), EVENT_TEXT)
     called = events[(events["sign"] != 0) & ~events["repeat"]]
     npz = np.load(RESULTS / "placebo_paths.npz")
     paths = {k: npz[k] for k in npz.files}

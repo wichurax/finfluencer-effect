@@ -42,8 +42,9 @@ In plain words:
 - **Too small to trade on, but big enough to measure.** And it is a correlation, not proof: in Poland, prices
   already moved +0.89 pp in the call's direction during the week *before* the video.
 
-The **no-news test** keeps only calls from videos published outside trading hours, about a stock that moved
-less than 3% in the week before and traded at normal volume in the three sessions before, from a video whose title names no news (earnings,
+The **no-news test** keeps only calls from videos published outside trading hours, about a stock whose move
+beyond the market over the five sessions before was under 3 pp either way, and whose volume in the three sessions
+before was on average at most about 20% above its usual level, from a video whose title names no news (earnings,
 results, dividend, deal, ...).
 
 ## Corrections
@@ -136,7 +137,8 @@ Codex (284). Each video's model is recorded in `labels/videos.csv`.
   Education video, e.l.f. Beauty rose 3.1% while the market rose 0.2%, so the move beyond the market was
   +2.9 pp.
 - **Random dates.** Each video is moved, with all its calls, to a random date in the study window,
-  2,000 times. The p-value is the share of draws at least as extreme as the real result.
+  2,000 times. A date without a session (a weekend, a holiday) counts from the next session, as a video
+  published that day would. The p-value is the share of draws at least as extreme as the real result.
 - **Many tests.** The q-values in the report correct for testing many groups at once (Benjamini-Hochberg).
 - **Minimum detectable effect.** For every test, the report gives the smallest effect the sample would detect
   80% of the time, so "no effect" can be told apart from "too little data".
@@ -155,7 +157,7 @@ Codex (284). Each video's model is recorded in `labels/videos.csv`.
 - **The labels come from AI models.** On the videos labelled by both Claude and GPT, the two models name the
   same stock about 60% of the time. When both name it, they give the same direction 87% of the time for U.S.
   videos and 85% for Polish ones. Opposite calls are under 1%.
-- **The key tests on both label sets.** On the 243 videos labelled by both models, the estimates are close
+- **The key tests on both label sets.** On the 243 videos Claude labelled and GPT labelled again, the estimates are close
   (all U.S. calls: +0.70 pp on Claude's labels, +0.83 pp on GPT's; Poland: +0.30 and +0.45 pp). That subsample
   is too small to test the Polish no-news result on its own.
 - **Scope.** Three channels per country, two years, daily prices: the effect within a session is not visible.
@@ -171,9 +173,15 @@ a group), and if you can, a command that shows it.
 - `src/finfluencer/classify.py`: the prompt and the label format.
 - `src/finfluencer/analyze.py`: the events, the random-date baseline, every test group.
 - `labels/videos.csv`: every video (metadata only) and which model labelled it.
-- `labels/labels.csv`: one row per stock named in a video: company, ticker, direction, strength, main topic or not.
-  In both, a title, company or ticker starting with `=`, `+`, `-` or `@` has an apostrophe in front, so a
-  spreadsheet does not run it as a formula; `labels.load()` takes it off.
+- `labels/labels.csv`: one row per stock a model named in a video: company, ticker, direction, strength, main topic
+  or not, and `source`. Rows with `source` = `main` come from the model that labelled the video, and only they go
+  into the analysis. Rows with `source` = `second` come from the other model, on the 283 videos labelled twice for
+  the agreement check (GPT on 243 of Claude's videos, Claude on 40 of GPT's); only `agreement` and `robustness` use
+  them. To count calls or reproduce the results, keep `source` = `main`: the two sources name the same stock in the
+  same video 1,213 times, not always in the same direction.
+  In both files, a title, company or ticker starting with `=`, `+`, `-` or `@` has an apostrophe in front, so a
+  spreadsheet does not run it as a formula; `labels.load()` takes it off. Text in `results/events.csv` and
+  `data/prices/symbol_check.csv` gets the same apostrophe.
 - `symbol_fixes.json`: hand corrections of tickers the model got wrong, for example `{"DGN.WA": "DIG.WA"}`;
   an empty string removes one.
 - `data/` (not in git): what each step downloads or produces.

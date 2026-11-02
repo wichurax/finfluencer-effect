@@ -17,10 +17,11 @@ from matplotlib.ticker import FuncFormatter  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from .analyze import (ALL, CLEANEST, HIGH_LIQ, HIGH_VIEWS, IN_SESSION, LOW_LIQ, LOW_VIEWS,  # noqa: E402
-                      NEAR_EARNINGS, NO_EARNINGS, NO_EARNINGS_DATES, OFF_SESSION, PATH, QUIET, QUIET_NO_NEWS,
-                      SEGMENTS, groups)
+from .analyze import (ALL, CLEANEST, EVENT_TEXT, HIGH_LIQ, HIGH_VIEWS, IN_SESSION, LOW_LIQ,  # noqa: E402
+                      LOW_VIEWS, NEAR_EARNINGS, NO_EARNINGS, NO_EARNINGS_DATES, OFF_SESSION, PATH, QUIET,
+                      QUIET_NO_NEWS, SEGMENTS, groups)
 from .config import CHANNELS, MARKETS, RESULTS  # noqa: E402
+from .files import unescape_formulas  # noqa: E402
 from .prices import PRICES  # noqa: E402
 
 CHARTS = RESULTS / "charts"
@@ -191,7 +192,7 @@ def _render(name: str, draw: Callable[[dict], plt.Figure]) -> None:
 
 class Data:
     def __init__(self) -> None:
-        self.events = pd.read_csv(RESULTS / "events.csv", low_memory=False)
+        self.events = unescape_formulas(pd.read_csv(RESULTS / "events.csv", low_memory=False), EVENT_TEXT)
         self.tests = pd.read_csv(RESULTS / "tests.csv").set_index(["segment", "group", "measure"])
         npz = np.load(RESULTS / "placebo_paths.npz")
         self.paths = {k: npz[k] for k in npz.files}
@@ -269,11 +270,11 @@ def path_grid(d: Data) -> None:
                 _style(ax, th)
                 ax.axhline(0, color=th["axis"], linewidth=1)
                 ax.axvline(-0.5, color=th["grid"], linewidth=1, linestyle=(0, (3, 3)))
-                null = d.paths.get(f"{seg}|{group}|car")
+                null = d.paths.get(f"{seg}|{group}|car")  # NaN where a draw has no value: left out
                 mask = d.masks[(seg, group)]
-                lo, hi = np.quantile(null, [0.025, 0.975], axis=0) * 100
+                lo, hi = np.nanquantile(null, [0.025, 0.975], axis=0) * 100
                 ax.fill_between(DAYS, lo, hi, color=th["band"], linewidth=0, label=tx["band"])
-                ax.plot(DAYS, null.mean(axis=0) * 100, color=th["muted"], linewidth=1.2, linestyle=(0, (4, 3)),
+                ax.plot(DAYS, np.nanmean(null, axis=0) * 100, color=th["muted"], linewidth=1.2, linestyle=(0, (4, 3)),
                         label=tx["random_avg"])
                 obs = d.signed_path(mask).mean(axis=0) * 100
                 ax.plot(DAYS, obs, color=th["s1"], linewidth=2, label=tx["actual"])
@@ -415,9 +416,9 @@ def volume(d: Data) -> None:
             ax.axvline(-0.5, color=th["grid"], linewidth=1, linestyle=(0, (3, 3)))
             null = d.paths.get(f"{seg}|{ALL}|vol")
             mask = d.masks[(seg, ALL)]
-            lo, hi = np.quantile(null, [0.025, 0.975], axis=0) * 100
+            lo, hi = np.nanquantile(null, [0.025, 0.975], axis=0) * 100
             ax.fill_between(DAYS, lo, hi, color=th["band"], linewidth=0, label=tx["band"])
-            ax.plot(DAYS, null.mean(axis=0) * 100, color=th["muted"], linewidth=1.2, linestyle=(0, (4, 3)),
+            ax.plot(DAYS, np.nanmean(null, axis=0) * 100, color=th["muted"], linewidth=1.2, linestyle=(0, (4, 3)),
                     label=tx["random_avg"])
             obs = np.nanmean(d.events.loc[mask, [f"vol_{k}" for k in DAYS]].to_numpy(), axis=0) * 100
             ax.plot(DAYS, obs, color=th["s1"], linewidth=2, label=tx["actual"])

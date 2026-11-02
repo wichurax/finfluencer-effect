@@ -27,3 +27,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/finfluencer"]
+
+[tool.pytest.ini_options]
+# video/tools/voice_test.py is a voice script, not a test, and needs packages the study does not.
+testpaths = ["tests"]
