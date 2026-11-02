@@ -14,6 +14,7 @@ from yt_dlp.networking.exceptions import HTTPError
 from yt_dlp.utils import DownloadError
 
 from .config import CHANNELS, DATA, STUDY_END, STUDY_START, Channel
+from .files import write_whole
 
 VIDEOS = DATA / "videos"
 # Stop scanning a channel after this many uploads in a row older than the window.
@@ -128,7 +129,7 @@ def fetch_channel(channel: Channel, limit: int = 2000) -> Iterator[bool]:
             continue
         older = 0
         if not path.exists() and ts and ts < end_ts:
-            path.write_text(json.dumps(video, ensure_ascii=False), encoding="utf-8")
+            write_whole(path, json.dumps(video, ensure_ascii=False))
             saved += 1
         if i % 25 == 0:
             print(f"[{channel.key}] {i}/{len(entries)} at {video.get('published_utc')}", flush=True)

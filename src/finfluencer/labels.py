@@ -18,6 +18,7 @@ import pandas as pd
 
 from .agreement import CHECK
 from .classify import MENTIONS
+from .files import escape_formulas, unescape_formulas, write_whole
 from .videos import VIDEOS, load_videos
 
 LABELS = Path(__file__).resolve().parents[2] / "labels"
@@ -27,6 +28,8 @@ RUN_COLUMNS = ["model", "backend", "effort", "classified_at"]
 STOCK_COLUMNS = ["company", "yahoo_symbol", "asset_type", "stance", "conviction", "focus"]
 # The second opinions: GPT on videos Claude labelled, and Claude on videos GPT labelled.
 SECOND_SETS = ("gpt", "claude")
+# Free text that a spreadsheet would run as a formula if it started with =, +, -, @, tab or CR.
+TEXT_COLUMNS = ["title", "company", "yahoo_symbol"]
 
 
 def _records(directory: Path) -> dict[str, dict]:
@@ -51,15 +54,17 @@ def export() -> None:
                        for s in rec["stocks"]]
         videos.append(row)
     LABELS.mkdir(exist_ok=True)
-    pd.DataFrame(videos).to_csv(LABELS / "videos.csv", index=False)
-    pd.DataFrame(stocks).to_csv(LABELS / "labels.csv", index=False)
+    escape_formulas(pd.DataFrame(videos), TEXT_COLUMNS).to_csv(LABELS / "videos.csv", index=False)
+    escape_formulas(pd.DataFrame(stocks), TEXT_COLUMNS).to_csv(LABELS / "labels.csv", index=False)
     print(f"labels/: {len(videos)} videos, {len(stocks)} stock labels", flush=True)
 
 
 def load() -> None:
     """Rebuilds data/videos, data/mentions and data/mentions_check from labels/. Never overwrites a file."""
-    videos = pd.read_csv(LABELS / "videos.csv", dtype={"id": str}, keep_default_na=False)
-    stocks = pd.read_csv(LABELS / "labels.csv", dtype={"video_id": str, "yahoo_symbol": str}, keep_default_na=False)
+    videos = unescape_formulas(pd.read_csv(LABELS / "videos.csv", dtype={"id": str}, keep_default_na=False),
+                               TEXT_COLUMNS)
+    stocks = unescape_formulas(pd.read_csv(LABELS / "labels.csv", dtype={"video_id": str, "yahoo_symbol": str},
+                                           keep_default_na=False), TEXT_COLUMNS)
     by_video = {key: group for key, group in stocks.groupby(["video_id", "source"])}
     written = 0
 
@@ -67,7 +72,7 @@ def load() -> None:
         nonlocal written
         if not path.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(record, ensure_ascii=False, indent=1), encoding="utf-8")
+            write_whole(path, json.dumps(record, ensure_ascii=False, indent=1))
             written += 1
 
     def labels_of(vid: str, source: str, run: dict) -> dict:

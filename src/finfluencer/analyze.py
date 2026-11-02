@@ -5,9 +5,11 @@ the close counts from that same session. The reference price is the close before
 Abnormal return = stock return minus the benchmark return (market-adjusted); a beta-adjusted
 version is kept as a robustness check.
 
-The baseline moves every video to a random trading day (all its stocks together, same signs),
-many times over. That keeps each stock's volatility and drift, the bull/bear mix, and the
-correlation between stocks named in one video, so the comparison is like for like.
+The baseline moves every video to a random calendar date in the study window (all its stocks
+together, same signs), many times over. A date with no session (a weekend, a holiday) counts from
+each stock's next session, as a video published that day would, so Mondays and the sessions after a
+holiday are drawn more often than other sessions. That keeps each stock's volatility and drift, the
+bull/bear mix, and the correlation between stocks named in one video, so the comparison is like for like.
 """
 
 import json
@@ -22,6 +24,7 @@ import statsmodels.api as sm
 from statsmodels.stats.multitest import multipletests
 
 from .config import CHANNELS, MARKETS, RESULTS, STUDY_END, STUDY_START, market_of
+from .files import escape_formulas
 from .prices import MENTIONS, PRICES, fix_symbol
 from .videos import load_videos
 
@@ -210,9 +213,18 @@ def build_events(series: dict[str, Series], mentions_dir: Path = MENTIONS,
         lambda v: pd.qcut(v.rank(method="first"), 3, labels=["low", "mid", "high"]) if len(v) >= 3 else None)
     events["views_tercile"] = events["video_id"].map(tercile).astype(str)
     # Liquidity terciles within each market, since PLN and USD turnover are not comparable.
-    events["liquidity"] = events.groupby("market")["turnover"].transform(
-        lambda t: pd.qcut(t, 3, labels=["low", "mid", "high"]) if t.notna().sum() >= 30 else None)
+    events["liquidity"] = events.groupby("market")["turnover"].transform(_liquidity_terciles)
     return events, dropped
+
+
+def _liquidity_terciles(turnover: pd.Series) -> pd.Series | None:
+    """One market's turnover in thirds; none with under 30 values, or when ties leave no three distinct thirds."""
+    if turnover.notna().sum() < 30:
+        return None
+    try:
+        return pd.qcut(turnover, 3, labels=["low", "mid", "high"])
+    except ValueError:  # tercile edges that coincide, as when a third of the values are equal
+        return None
 
 
 VALUE_KEYS = [*(f"car_{w}" for w in WINDOWS), "carb_d0-3", "car_pre", "abvol_d0", "abvol_d1", "absar_d0"]
@@ -323,12 +335,16 @@ def test_group(ev: pd.DataFrame, mask: pd.Series, key: str, null: dict[str, np.n
         return res
     fit = sm.OLS(y, np.ones(n)).fit(cov_type="cluster", cov_kwds={"groups": clusters})
     se = float(fit.bse[0])
-    null_means = np.nanmean(null[key][:, m] * sign[m], axis=1)
-    null_hits = np.nanmean((null[key][:, m] * sign[m]) > 0, axis=1)
+    null_values = null[key][:, m] * sign[m]
+    null_means = np.nanmean(null_values, axis=1)
+    # A value missing from a draw (a stock without history on that date) is no call, not a miss.
+    null_hits = np.nanmean(np.where(np.isnan(null_values), np.nan, null_values > 0), axis=1)
     # A draw with no value for this group (stocks with a short history) is no draw: kept, it makes
     # the centre NaN, every comparison false, and p the smallest there is.
     drawn = ~np.isnan(null_means)
     null_means, null_hits = null_means[drawn], null_hits[drawn]
+    if len(null_means) == 0:
+        return res
     centre = null_means.mean()
     obs = float(y.mean())
     res.update({
@@ -371,6 +387,8 @@ def test_momentum(ev: pd.DataFrame, mask: pd.Series, key: str, null: dict[str, n
     slope = float(np.cov(xv, yv)[0, 1] / np.var(xv, ddof=1))
     null_means = np.nanmean(np.where(ok, y_null - slope * x_null, np.nan), axis=1)
     null_means = null_means[~np.isnan(null_means)]  # as in test_group: an empty draw is no draw
+    if len(null_means) == 0:
+        return res
     y_obs = ev.loc[m, key].to_numpy() * sign[m]
     x_obs = ev.loc[m, "car_pre"].to_numpy() * sign[m]
     obs = float(np.mean(y_obs - slope * x_obs))
@@ -441,7 +459,13 @@ def placebo_paths(events: pd.DataFrame, series: dict[str, Series], masks: dict[s
             for key, values in (("car", car[:, sel]), ("vol", vol[:, sel])):
                 sums[name][key] += np.nansum(values, axis=1)
                 counts[name][key] += np.sum(~np.isnan(values), axis=1)
-    return {n: {k: sums[n][k] / np.maximum(counts[n][k], 1) for k in ("car", "vol")} for n in masks}
+    # A draw with no value for a group on a day is missing there, not a zero.
+    return {n: {k: np.divide(sums[n][k], counts[n][k], out=np.full_like(sums[n][k], np.nan), where=counts[n][k] > 0)
+                for k in ("car", "vol")} for n in masks}
+
+
+# Text in events.csv from YouTube and from the model, escaped for spreadsheets; its readers take the apostrophe off.
+EVENT_TEXT = ["title", "company", "evidence", "symbol"]
 
 
 def run(draws: int, seed: int) -> None:
@@ -472,7 +496,7 @@ def run(draws: int, seed: int) -> None:
     np.savez_compressed(RESULTS / "placebo_paths.npz",
                         **{f"{n}|{k}": v for n, d in paths.items() for k, v in d.items()})
 
-    events.to_csv(RESULTS / "events.csv", index=False)
+    escape_formulas(events, EVENT_TEXT).to_csv(RESULTS / "events.csv", index=False)
     tests.to_csv(RESULTS / "tests.csv", index=False)
     reg = pd.concat([regression(events, seg) for seg in SEGMENTS])
     reg.to_csv(RESULTS / "regression.csv")

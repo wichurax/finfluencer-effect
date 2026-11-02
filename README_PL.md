@@ -32,8 +32,9 @@ od października 2024 do października 2026 roku.
 - **p:** jaka część losowań dała wynik co najmniej tak duży jak prawdziwy. Im mniejsze p, tym trudniej wynik
   wytłumaczyć przypadkiem. p = 0,06 znaczy, że tak duży wynik zdarza się przypadkiem w 6 losowaniach na 100.
 - **Test bez newsów:** tylko opinie z filmów opublikowanych poza sesją, o spółkach, które w tygodniu przed
-  filmem były spokojne (kurs zmienił się o mniej niż 3%, a obroty w trzech sesjach przed filmem były normalne), z filmów, w których tytule nie ma
-  słów o wiadomościach (wyniki, raport, dywidenda, przejęcie...).
+  filmem były spokojne (ruch ponad rynek w pięciu sesjach przed filmem wyniósł mniej niż 3 pkt proc. w jedną czy
+  w drugą stronę, a obroty w trzech sesjach przed filmem były średnio najwyżej o ok. 20% wyższe niż zwykle), z filmów,
+  w których tytule nie ma słów o wiadomościach (wyniki, raport, dywidenda, przejęcie...).
 
 ## Wyniki
 
@@ -153,7 +154,8 @@ Opublikowane etykiety pochodzą od Claude Haiku 5.5 (1752 filmy), Claude Opus 5.
   filmie i w kilku kolejnych. Przykład: po pozytywnej opinii kanału Financial Education o e.l.f. Beauty spółka
   wzrosła w pierwszej sesji o 3,1%, a rynek o 0,2%. Ruch ponad rynek: +2,9 pkt proc. w stronę opinii.
 - **Porównanie z przypadkiem.** Każdy film przenoszę razem ze wszystkimi swoimi opiniami na losowy dzień z okresu
-  badania, 2000 razy. Prawdziwy wynik porównuję z tym, co dają losowe dni.
+  badania, 2000 razy. Dzień bez sesji (weekend, święto) liczy się od następnej sesji, tak jak film opublikowany
+  tego dnia. Prawdziwy wynik porównuję z tym, co dają losowe dni.
 - **Wiele testów naraz.** Przy tylu grupach część wyników wyszłaby „istotna” przez przypadek. Wartości q
   w raporcie to p poprawione na liczbę testów (metoda Benjaminiego-Hochberga).
 - **Najmniejszy wykrywalny efekt.** Dla każdego testu raport podaje najmniejszy efekt, który dana próba wykryłaby
@@ -173,7 +175,7 @@ Opublikowane etykiety pochodzą od Claude Haiku 5.5 (1752 filmy), Claude Opus 5.
 - **Etykiety wystawił model AI.** Na filmach ocenionych przez Claude i GPT oba modele wskazują te same spółki
   w około 60% przypadków. Gdy oba wskażą tę samą spółkę, dają ten sam kierunek opinii w 87% przypadków dla
   filmów z USA i w 85% dla polskich. Przeciwne opinie zdarzają się rzadziej niż raz na sto.
-- **Kluczowe testy na obu zestawach etykiet.** Na 243 filmach ocenionych przez oba modele wyniki są zbliżone
+- **Kluczowe testy na obu zestawach etykiet.** Na 243 filmach ocenionych przez Claude i ponownie przez GPT wyniki są zbliżone
   (wszystkie opinie w USA: +0,70 pkt proc. na etykietach Claude, +0,83 na etykietach GPT; w Polsce +0,30
   i +0,45). Ta próba jest jednak za mała, żeby osobno sprawdzić na niej polski test bez newsów.
 - **Zakres.**
@@ -193,8 +195,16 @@ Po to kod i etykiety są publiczne. Otwórz zgłoszenie (Issue) i napisz w nim:
 - `src/finfluencer/classify.py`: polecenie dla modelu (prompt) i format etykiet.
 - `src/finfluencer/analyze.py`: zdarzenia, porównanie z losowymi dniami, wszystkie grupy testów.
 - `labels/videos.csv`: wszystkie filmy (same metadane) i model, który ocenił każdy z nich.
-- `labels/labels.csv`: każda spółka wskazana w filmie, w osobnym wierszu. Zawiera nazwę, ticker, kierunek i siłę
-  opinii oraz to, czy spółka była głównym tematem filmu.
+- `labels/labels.csv`: każda spółka wskazana przez model w filmie, w osobnym wierszu. Zawiera nazwę, ticker,
+  kierunek i siłę opinii, to, czy spółka była głównym tematem filmu, oraz kolumnę `source`. Wiersze z `source` =
+  `main` pochodzą od modelu, który ocenił film, i tylko one wchodzą do analizy. Wiersze z `source` = `second` to
+  etykiety drugiego modelu dla 283 filmów ocenionych dwa razy na potrzeby sprawdzianu zgodności (GPT dla 243 filmów
+  Claude, Claude dla 40 filmów GPT); używają ich tylko `agreement` i `robustness`. Żeby policzyć opinie albo
+  powtórzyć wyniki, zostaw tylko `source` = `main`: oba źródła wskazują tę samą spółkę w tym samym filmie
+  1213 razy, nie zawsze z tym samym kierunkiem.
+  W obu plikach tytuł, nazwa lub ticker zaczynający się od `=`, `+`, `-` albo `@` ma na początku apostrof,
+  żeby arkusz nie wykonał go jako formuły; `labels.load()` go zdejmuje. Tak samo apostrof dostaje taki tekst
+  w `results/events.csv` i `data/prices/symbol_check.csv`.
 - `symbol_fixes.json`: ręczne poprawki tickerów, które model podał błędnie, np. `{"DGN.WA": "DIG.WA"}`; pusty
   napis usuwa ticker.
 - `data/` (poza gitem): to, co pobierają i tworzą kolejne kroki.

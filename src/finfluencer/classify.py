@@ -17,6 +17,7 @@ from itertools import zip_longest
 from pathlib import Path
 
 from .config import CHANNELS, DATA
+from .files import write_whole
 from .videos import load_videos
 
 MENTIONS = DATA / "mentions"
@@ -185,10 +186,10 @@ CODEX_OFF = ["shell_tool", "unified_exec", "view_image", "image_generation", "mu
 
 
 def codex_defaults() -> tuple[str, str]:
-    """Model and reasoning effort Codex uses when none is passed, from ~/.codex/config.toml."""
+    """Model and reasoning effort Codex uses when none is passed, from $CODEX_HOME/config.toml (default ~/.codex)."""
     import tomllib
 
-    path = Path.home() / ".codex" / "config.toml"
+    path = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex").expanduser() / "config.toml"
     config = tomllib.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     return config.get("model", "default"), config.get("model_reasoning_effort", "default")
 
@@ -290,8 +291,8 @@ def label_videos(todo: list[dict], backend: str, model: str, effort: str, worker
             "classified_at": datetime.now(timezone.utc).isoformat(),
             "stocks": labels["stocks"],
         }
-        (out_dir / f"{video['id']}.json").write_text(json.dumps(record, ensure_ascii=False, indent=1),
-                                                      encoding="utf-8")
+        # A file here means the video is done (classify_all and agreement skip it), so it is never half-written.
+        write_whole(out_dir / f"{video['id']}.json", json.dumps(record, ensure_ascii=False, indent=1))
         return f"{len(labels['stocks'])} stocks"
 
     done = failed = 0
